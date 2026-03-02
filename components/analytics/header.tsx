@@ -1,8 +1,8 @@
 "use client";
 
-import { TabGroup, TabList, Tab } from "@tremor/react";
 import { AnalyticsTimeframe, AgentType } from "@/types/analytics";
 import { ThemeToggle } from "../theme-toggle";
+import { SegmentedControl } from "../ui/segmented-control";
 
 interface AnalyticsHeaderProps {
     timeframe: AnalyticsTimeframe;
@@ -34,66 +34,58 @@ export function AnalyticsHeader({
     const activeAgentIndex = activeAgent === "all" ? 0 : agents.indexOf(activeAgent);
 
     return (
-        <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 glass-card p-8 rounded-3xl border-white/20 shadow-2xl relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
-
-            <div className="relative z-10 flex flex-wrap items-center gap-8">
-                <div className="space-y-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/80 px-1 flex items-center gap-2 group/label">
-                        <div className="w-1 h-1 rounded-full bg-primary/40 group-hover/label:bg-primary transition-colors" />
-                        Timeframe
-                    </span>
-                    <TabGroup
-                        index={["daily", "weekly", "monthly"].indexOf(timeframe)}
-                        onIndexChange={handleTimeframeChange}
-                    >
-                        <TabList variant="solid" className="glass-card !bg-muted/30 border-none">
-                            <Tab className="px-4 py-1.5 font-semibold text-xs">Daily</Tab>
-                            <Tab className="px-4 py-1.5 font-semibold text-xs">Weekly</Tab>
-                            <Tab className="px-4 py-1.5 font-semibold text-xs">Monthly</Tab>
-                        </TabList>
-                    </TabGroup>
+        <header className="flex flex-col gap-6 p-6 !bg-card/30 backdrop-blur-xl rounded-2xl border border-white/10 shadow-lg relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                <div className="space-y-1">
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                        Snowie Analytics
+                    </h1>
+                    <p className="text-xs font-medium text-muted-foreground/60">
+                        Agent performance and usage insights
+                    </p>
                 </div>
-
-                <div className="space-y-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/80 px-1 flex items-center gap-2 group/label">
-                        <div className="w-1 h-1 rounded-full bg-primary/40 group-hover/label:bg-primary transition-colors" />
-                        Metric
-                    </span>
-                    <TabGroup
-                        index={metric === "credits" ? 0 : 1}
-                        onIndexChange={handleMetricChange}
-                    >
-                        <TabList variant="solid" className="glass-card !bg-muted/30 border-none">
-                            <Tab className="px-4 py-1.5 font-semibold text-xs">Credits</Tab>
-                            <Tab className="px-4 py-1.5 font-semibold text-xs">Calls</Tab>
-                        </TabList>
-                    </TabGroup>
-                </div>
-
-                <div className="space-y-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/80 px-1 flex items-center gap-2 group/label">
-                        <div className="w-1 h-1 rounded-full bg-primary/40 group-hover/label:bg-primary transition-colors" />
-                        Model Engine
-                    </span>
-                    <TabGroup
-                        index={activeAgentIndex}
-                        onIndexChange={(idx) => onAgentChange(agents[idx])}
-                    >
-                        <TabList variant="solid" className="glass-card !bg-muted/30 border-none">
-                            <Tab className="px-3 py-1.5 font-semibold text-xs whitespace-nowrap">All</Tab>
-                            <Tab className="px-3 py-1.5 font-semibold text-xs whitespace-nowrap">Gemini</Tab>
-                            <Tab className="px-3 py-1.5 font-semibold text-xs whitespace-nowrap">Grok</Tab>
-                            <Tab className="px-3 py-1.5 font-semibold text-xs whitespace-nowrap">UltraVox</Tab>
-                            <Tab className="px-3 py-1.5 font-semibold text-xs whitespace-nowrap">Text</Tab>
-                        </TabList>
-                    </TabGroup>
+                <div className="flex items-center gap-3">
+                    <ThemeToggle />
                 </div>
             </div>
 
-            <div className="relative z-10 flex items-center justify-end">
-                <div className="p-1 glass-card rounded-xl !bg-muted/30 border-none group/toggle">
-                    <ThemeToggle />
+            <div className="h-px w-full bg-border/50 relative z-10" />
+
+            <div className="relative z-10 flex flex-wrap items-center gap-x-8 gap-y-6">
+                <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                        Timeframe
+                    </span>
+                    <SegmentedControl
+                        options={["Daily", "Weekly", "Monthly"]}
+                        value={["daily", "weekly", "monthly"].indexOf(timeframe)}
+                        onChange={handleTimeframeChange}
+                        className="min-w-[240px]"
+                    />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                        Visualizing
+                    </span>
+                    <SegmentedControl
+                        options={["Credits", "Calls"]}
+                        value={metric === "credits" ? 0 : 1}
+                        onChange={handleMetricChange}
+                        className="min-w-[160px]"
+                    />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                        Engine Filter
+                    </span>
+                    <SegmentedControl
+                        options={["All", "Gemini", "Grok", "UltraVox", "Text"]}
+                        value={activeAgentIndex}
+                        onChange={(idx) => onAgentChange(agents[idx])}
+                        className="min-w-[320px]"
+                    />
                 </div>
             </div>
         </header>

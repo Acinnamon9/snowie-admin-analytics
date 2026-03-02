@@ -11,6 +11,7 @@ import { DistributionChart } from "./distribution-chart";
 import { Insights } from "./insights";
 import { Loader2 } from "lucide-react";
 import { AnalyticsHeader } from "./header";
+import { AgentBreakdown } from "./agent-breakdown";
 
 export function AnalyticsDashboard() {
     const [timeframe, setTimeframe] = useState<AnalyticsTimeframe>("daily");
@@ -67,6 +68,7 @@ export function AnalyticsDashboard() {
                     </div>
 
                     <div className="grid grid-cols-1 gap-8">
+                        <AgentBreakdown data={data} />
                         <AgencyTable data={data} />
                         <Insights data={data} />
                     </div>

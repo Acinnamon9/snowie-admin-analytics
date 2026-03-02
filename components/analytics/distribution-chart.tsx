@@ -9,35 +9,66 @@ interface DistributionChartProps {
 }
 
 const AGENT_COLORS: Record<string, string> = {
-    "GeminiVoice": "blue",
-    "GrokRealtime": "violet",
-    "UltraVoxVoice": "orange",
-    "TextAgent": "emerald",
+    "Gemini": "indigo",
+    "Grok": "rose",
+    "UltraVox": "amber",
+    "Text Agent": "emerald",
+};
+
+const AGENT_HEX_COLORS: Record<string, string> = {
+    "Gemini": "#6366f1",
+    "Grok": "#f43f5e",
+    "UltraVox": "#f59e0b",
+    "Text Agent": "#10b981",
 };
 
 export function DistributionChart({ data, metric }: DistributionChartProps) {
+    // Map internal names to display names
+    const getAgentLabel = (name: string) => {
+        if (name === "GeminiVoice") return "Gemini";
+        if (name === "GrokRealtime") return "Grok";
+        if (name === "UltraVoxVoice") return "UltraVox";
+        if (name === "TextAgent") return "Text Agent";
+        return name;
+    };
+
     const totals = data.reduce((acc, curr) => {
         const val = metric === "credits" ? curr.total_credits : curr.total_calls;
-        acc[curr.agent_type] = (acc[curr.agent_type] || 0) + val;
+        const label = getAgentLabel(curr.agent_type);
+        acc[label] = (acc[label] || 0) + val;
         return acc;
     }, {} as Record<string, number>);
 
-    const categories = Object.keys(totals);
-    const chartData = categories.map((name) => ({
-        name,
-        value: Number(totals[name].toFixed(2)),
-    }));
+    // Create chart data and sort by usage size
+    const chartData = Object.keys(totals)
+        .map((name) => ({
+            name,
+            value: Number(totals[name].toFixed(2)),
+        }))
+        .sort((a, b) => b.value - a.value);
 
+    const categories = chartData.map(d => d.name);
     const colors = categories.map(name => AGENT_COLORS[name] || "slate");
 
     return (
-        <Card className="h-full">
-            <div>
-                <Title className="text-xl font-bold tracking-tight">Agent Distribution</Title>
-                <Text className="text-xs font-medium text-muted-foreground/60 uppercase tracking-widest mt-1">Market share by {metric}</Text>
+        <Card className="h-full !bg-card/30 backdrop-blur-xl border-white/10 premium-shadow">
+            {/* Tailwind 4 Safelist (Ensures colors aren't tree-shaken) */}
+            <div className="hidden">
+                <div className="bg-indigo-500 bg-rose-500 bg-amber-500 bg-emerald-500" />
+                <div className="text-indigo-500 text-rose-500 text-amber-500 text-emerald-500" />
+                <div className="fill-indigo-500 fill-rose-500 fill-amber-500 fill-emerald-500" />
+                <div className="stroke-indigo-500 stroke-rose-500 stroke-amber-500 stroke-emerald-500" />
             </div>
+
+            <div>
+                <h3 className="text-lg font-bold text-foreground">Agent Distribution</h3>
+                <p className="text-xs font-medium text-muted-foreground/60">
+                    Market share by {metric}
+                </p>
+            </div>
+
             <DonutChart
-                className="mt-8 h-56"
+                className="mt-8 h-48"
                 data={chartData}
                 category="value"
                 index="name"
@@ -46,17 +77,38 @@ export function DistributionChart({ data, metric }: DistributionChartProps) {
                 }
                 colors={colors}
                 showAnimation={true}
+                variant="donut"
             />
+
             <div className="mt-8 space-y-3">
                 {chartData.map((item) => (
-                    <Flex key={item.name} className="group transition-opacity duration-300">
-                        <div className="flex items-center space-x-3">
-                            <span className={`h-2 w-2 rounded-full bg-${AGENT_COLORS[item.name] || 'slate'}-500 shadow-[0_0_8px_rgba(0,0,0,0.2)]`} />
-                            <Text className="text-sm font-semibold text-muted-foreground group-hover:text-foreground transition-colors duration-200">{item.name}</Text>
+                    <Flex key={item.name} className="group">
+                        <div className="flex items-center space-x-2.5">
+                            <span
+                                className="h-2 w-2 rounded-full shadow-sm"
+                                style={{ backgroundColor: AGENT_HEX_COLORS[item.name] || '#cbd5e1' }}
+                            />
+                            <Text className="text-sm font-medium text-muted-foreground/90 group-hover:text-foreground">
+                                {item.name}
+                            </Text>
                         </div>
-                        <Badge size="xs" color={(AGENT_COLORS[item.name] || 'slate') as any} className="font-mono font-bold">
-                            {item.value.toLocaleString()}
-                        </Badge>
+                        <div className="flex items-center gap-3">
+                            <Text className="text-sm font-semibold text-foreground">
+                                {chartData.reduce((a, b) => a + b.value, 0) > 0
+                                    ? Intl.NumberFormat("us", {
+                                        style: "percent",
+                                        maximumFractionDigits: 1,
+                                    }).format(item.value / chartData.reduce((a, b) => a + b.value, 0))
+                                    : "0%"}
+                            </Text>
+                            <Badge
+                                size="xs"
+                                color={(AGENT_COLORS[item.name] || 'slate') as any}
+                                className="font-semibold px-2 py-0.5"
+                            >
+                                {item.value.toLocaleString()}
+                            </Badge>
+                        </div>
                     </Flex>
                 ))}
             </div>

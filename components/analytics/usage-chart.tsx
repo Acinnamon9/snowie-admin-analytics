@@ -9,9 +9,9 @@ interface UsageChartProps {
 }
 
 const AGENT_COLORS: Record<string, string> = {
-    "Gemini": "blue",
-    "Grok": "violet",
-    "UltraVox": "orange",
+    "Gemini": "indigo",
+    "Grok": "rose",
+    "UltraVox": "amber",
     "Text Agent": "emerald",
 };
 
@@ -49,7 +49,16 @@ export function UsageChart({ data, metric }: UsageChartProps) {
         agents.add(agentDisplayName);
     });
 
-    const categories = Array.from(agents);
+    // Calculate total usage per agent to sort the legend
+    const agentTotals = new Map<string, number>();
+    data.forEach(item => {
+        const agentLabel = getAgentLabel(item.agent_type);
+        const val = metric === "credits" ? item.total_credits : item.total_calls;
+        agentTotals.set(agentLabel, (agentTotals.get(agentLabel) || 0) + val);
+    });
+
+    const categories = Array.from(agents).sort((a, b) => (agentTotals.get(b) || 0) - (agentTotals.get(a) || 0));
+
     const chartData = Array.from(groupMap.values()).map(point => {
         const fullPoint = { ...point };
         categories.forEach(agent => {
@@ -61,13 +70,19 @@ export function UsageChart({ data, metric }: UsageChartProps) {
     const colors = categories.map(agent => AGENT_COLORS[agent] || "slate");
 
     return (
-        <Card className="h-full !bg-card/30 backdrop-blur-xl border-white/10 premium-shadow">
+        <Card className="h-full !bg-card/30 backdrop-blur-xl border-white/10 shadow-lg p-6">
+            {/* Tailwind 4 Safelist for Tremor AreaChart & Legend */}
+            <div className="hidden">
+                <div className="bg-indigo-500 bg-rose-500 bg-amber-500 bg-emerald-500" />
+                <div className="text-indigo-500 text-rose-500 text-amber-500 text-emerald-500" />
+                <div className="fill-indigo-500 fill-rose-500 fill-amber-500 fill-emerald-500" />
+                <div className="stroke-indigo-500 stroke-rose-500 stroke-amber-500 stroke-emerald-500" />
+            </div>
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h3 className="text-xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                        Usage Trends
-                    </h3>
-                    <p className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] mt-1">
+                    <h3 className="text-lg font-bold text-foreground">Usage Trends</h3>
+                    <p className="text-xs font-medium text-muted-foreground/60 transition-colors">
                         {labelDescription}
                     </p>
                 </div>
@@ -75,7 +90,7 @@ export function UsageChart({ data, metric }: UsageChartProps) {
                     <Legend
                         categories={categories}
                         colors={colors}
-                        className="!text-[10px] font-bold uppercase tracking-wider"
+                        className="!text-xs font-medium"
                     />
                 </div>
             </div>

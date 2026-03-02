@@ -23,14 +23,14 @@ export function Insights({ data }: InsightsProps) {
         },
         {
             title: "Model Distribution",
-            description: "UltraVoxVoice currently leads in volume, while GeminiVoice shows the most stable credit consumption patterns.",
+            description: "UltraVox series currently leads in volume, while Gemini models show the most stable credit consumption patterns.",
             deltaType: "unchanged",
             icon: Minus,
             color: "blue"
         },
         {
-            title: "Credit Optimization",
-            description: "Consider moving high-volume retail agents to GrokRealtime during off-peak hours to optimize credit pools.",
+            title: "Optimization Strategy",
+            description: "Strategically review high-volume agents for potential Grok engine migration to optimize credit pools during peak scaling.",
             deltaType: "moderateDecrease",
             icon: Info,
             color: "amber"
@@ -38,29 +38,32 @@ export function Insights({ data }: InsightsProps) {
     ];
 
     return (
-        <Card className="p-8">
-            <div className="flex items-center gap-2 mb-6">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                    <Info className="text-primary w-4 h-4" />
+        <Card className="!bg-card/30 backdrop-blur-xl border-white/10 shadow-lg p-8">
+            <div className="flex items-center gap-3 mb-8">
+                <div className="p-2 border border-white/10 bg-white/5 rounded-lg text-primary">
+                    <Info size={18} />
                 </div>
-                <h3 className="text-xl font-bold tracking-tight">AI Generated Insights</h3>
+                <div>
+                    <h3 className="text-xl font-bold text-foreground">Strategic Insights</h3>
+                    <p className="text-xs font-medium text-muted-foreground/60">Automated performance analysis</p>
+                </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {insights.map((insight, idx) => (
-                    <div key={idx} className="space-y-4 p-6 glass-card rounded-2xl border-white/5 bg-white/5 hover:bg-white/10 transition-colors duration-300">
+                    <div key={idx} className="space-y-4 p-6 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors duration-300 group">
                         <Flex alignItems="center" justifyContent="between">
-                            <Badge color={insight.color as any} className="font-bold text-[10px] uppercase tracking-wider">
+                            <Badge color={insight.color as any} className="font-semibold text-xs py-0.5">
                                 {insight.title}
                             </Badge>
                             <BadgeDelta deltaType={insight.deltaType as any} isIncreasePositive={true} size="xs" />
                         </Flex>
-                        <Text className="text-sm leading-relaxed text-muted-foreground font-medium italic">
+                        <Text className="text-sm leading-relaxed text-muted-foreground/90 font-medium italic">
                             "{insight.description}"
                         </Text>
-                        <div className="flex items-center gap-2 pt-2 border-t border-white/5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                            <Text className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
-                                Real-time Analysis
+                        <div className="flex items-center gap-2 pt-3 border-t border-white/5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary/50 group-hover:bg-primary transition-colors" />
+                            <Text className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40">
+                                Global Analysis
                             </Text>
                         </div>
                     </div>
