@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, Title, AreaChart, Text, Legend } from "@tremor/react";
-import { DailyAnalytics, AgentType } from "@/types/analytics";
+import { Card, AreaChart, Legend } from "@tremor/react";
+import { DailyAnalytics } from "@/types/analytics";
 
 interface UsageChartProps {
     data: any[];
@@ -9,17 +9,15 @@ interface UsageChartProps {
 }
 
 const AGENT_COLORS: Record<string, string> = {
-    "Gemini": "indigo",
-    "Grok": "rose",
+    "Gemini": "orange",
+    "Grok": "cyan",
     "UltraVox": "amber",
     "Text Agent": "emerald",
 };
 
 export function UsageChart({ data, metric }: UsageChartProps) {
-    const valueKey = metric === "credits" ? "total_credits" : "total_calls";
     const labelDescription = metric === "credits" ? "Credits Consumed" : "Call Volume";
 
-    // Map internal names to display names
     const getAgentLabel = (name: string) => {
         if (name === "GeminiVoice") return "Gemini";
         if (name === "GrokRealtime") return "Grok";
@@ -28,7 +26,6 @@ export function UsageChart({ data, metric }: UsageChartProps) {
         return name;
     };
 
-    // Group and aggregate data by label
     const groupMap = new Map<string, Record<string, any>>();
     const agents = new Set<string>();
 
@@ -49,7 +46,6 @@ export function UsageChart({ data, metric }: UsageChartProps) {
         agents.add(agentDisplayName);
     });
 
-    // Calculate total usage per agent to sort the legend
     const agentTotals = new Map<string, number>();
     data.forEach(item => {
         const agentLabel = getAgentLabel(item.agent_type);
@@ -70,29 +66,27 @@ export function UsageChart({ data, metric }: UsageChartProps) {
     const colors = categories.map(agent => AGENT_COLORS[agent] || "slate");
 
     return (
-        <Card className="h-full !bg-card/30 backdrop-blur-xl border-white/10 shadow-lg p-6">
-            {/* Tailwind 4 Safelist for Tremor AreaChart & Legend */}
+        <Card className="h-full p-6">
+            {/* Safelist */}
             <div className="hidden">
-                <div className="bg-indigo-500 bg-rose-500 bg-amber-500 bg-emerald-500" />
-                <div className="text-indigo-500 text-rose-500 text-amber-500 text-emerald-500" />
-                <div className="fill-indigo-500 fill-rose-500 fill-amber-500 fill-emerald-500" />
-                <div className="stroke-indigo-500 stroke-rose-500 stroke-amber-500 stroke-emerald-500" />
+                <div className="bg-orange-500 bg-cyan-500 bg-amber-500 bg-emerald-500" />
+                <div className="text-orange-500 text-cyan-500 text-amber-500 text-emerald-500" />
+                <div className="fill-orange-500 fill-cyan-500 fill-amber-500 fill-emerald-500" />
+                <div className="stroke-orange-500 stroke-cyan-500 stroke-amber-500 stroke-emerald-500" />
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h3 className="text-lg font-bold text-foreground">Usage Trends</h3>
-                    <p className="text-xs font-medium text-muted-foreground/60 transition-colors">
+                    <h3 className="text-[17px] font-bold text-foreground tracking-tight">Usage Trends</h3>
+                    <p className="text-[12px] font-medium text-muted-foreground mt-1">
                         {labelDescription}
                     </p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <Legend
-                        categories={categories}
-                        colors={colors}
-                        className="!text-xs font-medium"
-                    />
-                </div>
+                <Legend
+                    categories={categories}
+                    colors={colors}
+                    className="!text-[11px] font-semibold"
+                />
             </div>
 
             <AreaChart
@@ -113,7 +107,7 @@ export function UsageChart({ data, metric }: UsageChartProps) {
                 showXAxis={true}
                 yAxisWidth={48}
                 startEndOnly={false}
-                animationDuration={1500}
+                animationDuration={1200}
             />
         </Card>
     );

@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, Title, DonutChart, Text, Flex, Badge } from "@tremor/react";
-import { DailyAnalytics, WeeklyAnalytics, MonthlyAnalytics, AgentType } from "@/types/analytics";
+import { Card, DonutChart, Text, Flex, Badge } from "@tremor/react";
+import { DailyAnalytics, WeeklyAnalytics, MonthlyAnalytics } from "@/types/analytics";
 
 interface DistributionChartProps {
     data: DailyAnalytics[] | WeeklyAnalytics[] | MonthlyAnalytics[];
@@ -9,21 +9,20 @@ interface DistributionChartProps {
 }
 
 const AGENT_COLORS: Record<string, string> = {
-    "Gemini": "indigo",
-    "Grok": "rose",
+    "Gemini": "orange",
+    "Grok": "cyan",
     "UltraVox": "amber",
     "Text Agent": "emerald",
 };
 
 const AGENT_HEX_COLORS: Record<string, string> = {
-    "Gemini": "#6366f1",
-    "Grok": "#f43f5e",
-    "UltraVox": "#f59e0b",
-    "Text Agent": "#10b981",
+    "Gemini": "#E8603C",
+    "Grok": "#2AA89B",
+    "UltraVox": "#E9A420",
+    "Text Agent": "#44A870",
 };
 
 export function DistributionChart({ data, metric }: DistributionChartProps) {
-    // Map internal names to display names
     const getAgentLabel = (name: string) => {
         if (name === "GeminiVoice") return "Gemini";
         if (name === "GrokRealtime") return "Grok";
@@ -39,7 +38,6 @@ export function DistributionChart({ data, metric }: DistributionChartProps) {
         return acc;
     }, {} as Record<string, number>);
 
-    // Create chart data and sort by usage size
     const chartData = Object.keys(totals)
         .map((name) => ({
             name,
@@ -47,22 +45,23 @@ export function DistributionChart({ data, metric }: DistributionChartProps) {
         }))
         .sort((a, b) => b.value - a.value);
 
+    const totalValue = chartData.reduce((a, b) => a + b.value, 0);
     const categories = chartData.map(d => d.name);
     const colors = categories.map(name => AGENT_COLORS[name] || "slate");
 
     return (
-        <Card className="h-full !bg-card/30 backdrop-blur-xl border-white/10 premium-shadow">
-            {/* Tailwind 4 Safelist (Ensures colors aren't tree-shaken) */}
+        <Card className="h-full p-6">
+            {/* Safelist */}
             <div className="hidden">
-                <div className="bg-indigo-500 bg-rose-500 bg-amber-500 bg-emerald-500" />
-                <div className="text-indigo-500 text-rose-500 text-amber-500 text-emerald-500" />
-                <div className="fill-indigo-500 fill-rose-500 fill-amber-500 fill-emerald-500" />
-                <div className="stroke-indigo-500 stroke-rose-500 stroke-amber-500 stroke-emerald-500" />
+                <div className="bg-orange-500 bg-cyan-500 bg-amber-500 bg-emerald-500" />
+                <div className="text-orange-500 text-cyan-500 text-amber-500 text-emerald-500" />
+                <div className="fill-orange-500 fill-cyan-500 fill-amber-500 fill-emerald-500" />
+                <div className="stroke-orange-500 stroke-cyan-500 stroke-amber-500 stroke-emerald-500" />
             </div>
 
             <div>
-                <h3 className="text-lg font-bold text-foreground">Agent Distribution</h3>
-                <p className="text-xs font-medium text-muted-foreground/60">
+                <h3 className="text-[17px] font-bold text-foreground tracking-tight">Agent Distribution</h3>
+                <p className="text-[12px] font-medium text-muted-foreground mt-1">
                     Market share by {metric}
                 </p>
             </div>
@@ -80,36 +79,36 @@ export function DistributionChart({ data, metric }: DistributionChartProps) {
                 variant="donut"
             />
 
-            <div className="mt-8 space-y-3">
+            <div className="mt-8 space-y-4">
                 {chartData.map((item) => (
-                    <Flex key={item.name} className="group">
-                        <div className="flex items-center space-x-2.5">
-                            <span
-                                className="h-2 w-2 rounded-full shadow-sm"
-                                style={{ backgroundColor: AGENT_HEX_COLORS[item.name] || '#cbd5e1' }}
-                            />
-                            <Text className="text-sm font-medium text-muted-foreground/90 group-hover:text-foreground">
-                                {item.name}
-                            </Text>
-                        </div>
+                    <div key={item.name} className="flex items-center justify-between group">
                         <div className="flex items-center gap-3">
-                            <Text className="text-sm font-semibold text-foreground">
-                                {chartData.reduce((a, b) => a + b.value, 0) > 0
-                                    ? Intl.NumberFormat("us", {
-                                        style: "percent",
-                                        maximumFractionDigits: 1,
-                                    }).format(item.value / chartData.reduce((a, b) => a + b.value, 0))
+                            <span
+                                className="h-3 w-3 rounded-full"
+                                style={{ backgroundColor: AGENT_HEX_COLORS[item.name] || '#94a3b8' }}
+                            />
+                            <span className="text-[13px] font-medium text-muted-foreground/80 group-hover:text-foreground transition-colors">
+                                {item.name}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <span className="text-[13px] font-bold text-foreground tabular-nums">
+                                {totalValue > 0
+                                    ? Intl.NumberFormat("us", { style: "percent", maximumFractionDigits: 1 })
+                                        .format(item.value / totalValue)
                                     : "0%"}
-                            </Text>
-                            <Badge
-                                size="xs"
-                                color={(AGENT_COLORS[item.name] || 'slate') as any}
-                                className="font-semibold px-2 py-0.5"
+                            </span>
+                            <span
+                                className="text-[11px] font-bold px-2.5 py-1 rounded-lg tabular-nums"
+                                style={{
+                                    backgroundColor: `${AGENT_HEX_COLORS[item.name]}15`,
+                                    color: AGENT_HEX_COLORS[item.name],
+                                }}
                             >
                                 {item.value.toLocaleString()}
-                            </Badge>
+                            </span>
                         </div>
-                    </Flex>
+                    </div>
                 ))}
             </div>
         </Card>

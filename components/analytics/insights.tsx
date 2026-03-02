@@ -1,8 +1,8 @@
 "use client";
 
-import { Card, Text, Flex, Badge, BadgeDelta } from "@tremor/react";
+import { Card, Text, Flex, BadgeDelta } from "@tremor/react";
 import { DailyAnalytics, WeeklyAnalytics, MonthlyAnalytics } from "@/types/analytics";
-import { Info, TrendingUp, Minus } from "lucide-react";
+import { Info, TrendingUp, Minus, Zap } from "lucide-react";
 
 interface InsightsProps {
     data: DailyAnalytics[] | WeeklyAnalytics[] | MonthlyAnalytics[];
@@ -18,53 +18,56 @@ export function Insights({ data }: InsightsProps) {
             title: "Performance Efficiency",
             description: `Aggregated cost per call is ${avgCost.toFixed(4)} credits. Efficiency is within the target range for the current volume.`,
             deltaType: "increase",
-            icon: TrendingUp,
-            color: "emerald"
+            hex: "#44A870",
         },
         {
             title: "Model Distribution",
             description: "UltraVox series currently leads in volume, while Gemini models show the most stable credit consumption patterns.",
             deltaType: "unchanged",
-            icon: Minus,
-            color: "blue"
+            hex: "#2AA89B",
         },
         {
             title: "Optimization Strategy",
             description: "Strategically review high-volume agents for potential Grok engine migration to optimize credit pools during peak scaling.",
             deltaType: "moderateDecrease",
-            icon: Info,
-            color: "amber"
+            hex: "#E9A420",
         }
     ];
 
     return (
-        <Card className="!bg-card/30 backdrop-blur-xl border-white/10 shadow-lg p-8">
-            <div className="flex items-center gap-3 mb-8">
-                <div className="p-2 border border-white/10 bg-white/5 rounded-lg text-primary">
-                    <Info size={18} />
+        <Card className="p-7">
+            <div className="flex items-center gap-4 mb-7">
+                <div className="p-2.5 rounded-[12px] gradient-coral" style={{ boxShadow: "0 4px 14px -2px rgba(232, 96, 60, 0.3)" }}>
+                    <Info size={16} className="text-white" />
                 </div>
                 <div>
-                    <h3 className="text-xl font-bold text-foreground">Strategic Insights</h3>
-                    <p className="text-xs font-medium text-muted-foreground/60">Automated performance analysis</p>
+                    <h3 className="text-[17px] font-bold text-foreground tracking-tight">Strategic Insights</h3>
+                    <p className="text-[12px] font-medium text-muted-foreground mt-0.5">Automated performance analysis</p>
                 </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {insights.map((insight, idx) => (
-                    <div key={idx} className="space-y-4 p-6 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors duration-300 group">
-                        <Flex alignItems="center" justifyContent="between">
-                            <Badge color={insight.color as any} className="font-semibold text-xs py-0.5">
+                    <div
+                        key={idx}
+                        className="p-5 rounded-2xl border border-border/40 bg-secondary/25 hover:bg-secondary/50 transition-all duration-300 group space-y-4"
+                    >
+                        <div className="flex items-center justify-between">
+                            <span
+                                className="text-[11px] font-bold px-2.5 py-1 rounded-lg"
+                                style={{ backgroundColor: `${insight.hex}15`, color: insight.hex }}
+                            >
                                 {insight.title}
-                            </Badge>
+                            </span>
                             <BadgeDelta deltaType={insight.deltaType as any} isIncreasePositive={true} size="xs" />
-                        </Flex>
-                        <Text className="text-sm leading-relaxed text-muted-foreground/90 font-medium italic">
-                            "{insight.description}"
-                        </Text>
-                        <div className="flex items-center gap-2 pt-3 border-t border-white/5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary/50 group-hover:bg-primary transition-colors" />
-                            <Text className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40">
+                        </div>
+                        <p className="text-[13px] leading-relaxed text-muted-foreground font-medium">
+                            {insight.description}
+                        </p>
+                        <div className="flex items-center gap-2 pt-3 border-t border-border/25">
+                            <span className="w-1.5 h-1.5 rounded-full group-hover:scale-125 transition-transform" style={{ backgroundColor: insight.hex }} />
+                            <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/50">
                                 Global Analysis
-                            </Text>
+                            </span>
                         </div>
                     </div>
                 ))}

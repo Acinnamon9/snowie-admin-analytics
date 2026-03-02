@@ -13,34 +13,40 @@ interface SegmentedControlProps {
     value: number;
     onChange: (index: number) => void;
     className?: string;
+    size?: "sm" | "md";
 }
 
-export function SegmentedControl({ options, value, onChange, className }: SegmentedControlProps) {
+export function SegmentedControl({ options, value, onChange, className, size = "md" }: SegmentedControlProps) {
     const slotWidth = 100 / options.length;
 
     return (
         <div className={cn(
-            "relative flex items-center p-1 glass-card !bg-muted/30 border-none rounded-xl",
+            "relative flex items-center p-[3px] rounded-[12px] transition-all duration-300",
+            "bg-secondary/80 border border-border/50",
             className
         )}>
             {/* Sliding Pill */}
             <div
-                className="absolute h-[calc(100%-8px)] rounded-lg bg-white dark:bg-primary shadow-sm transition-all duration-300 ease-in-out z-0"
+                className="absolute rounded-[9px] transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0"
                 style={{
-                    width: `calc(${slotWidth}% - 8px)`,
-                    left: `calc(${value * slotWidth}% + 4px)`,
+                    width: `calc(${slotWidth}% - 4px)`,
+                    left: `calc(${value * slotWidth}% + 2px)`,
+                    top: "2px",
+                    bottom: "2px",
+                    background: "hsl(var(--coral))",
+                    boxShadow: "0 2px 8px -1px rgba(232, 96, 60, 0.4)",
                 }}
             />
 
-            {/* Options */}
             {options.map((option, index) => (
                 <button
                     key={option}
                     onClick={() => onChange(index)}
                     className={cn(
-                        "relative z-10 flex-1 px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors duration-200",
+                        "relative z-10 flex-1 whitespace-nowrap transition-all duration-300 font-semibold rounded-[9px]",
+                        size === "sm" ? "px-3 py-[5px] text-[11px]" : "px-4 py-[7px] text-[13px]",
                         value === index
-                            ? "text-primary dark:text-primary-foreground"
+                            ? "text-white"
                             : "text-muted-foreground hover:text-foreground"
                     )}
                 >

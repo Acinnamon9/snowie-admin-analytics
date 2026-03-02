@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell, Text, Badge } from "@tremor/react";
+import { Card } from "@tremor/react";
 import { DailyAnalytics, WeeklyAnalytics, MonthlyAnalytics, AgentType } from "@/types/analytics";
 
 interface AgentBreakdownProps {
@@ -14,30 +14,18 @@ const AGENT_LABELS: Record<string, string> = {
     "TextAgent": "Text Agent",
 };
 
-const AGENT_COLORS: Record<string, string> = {
-    "GeminiVoice": "indigo",
-    "GrokRealtime": "rose",
-    "UltraVoxVoice": "amber",
-    "TextAgent": "emerald",
-};
-
-const DOT_COLORS: Record<string, string> = {
-    "GeminiVoice": "bg-indigo-500 shadow-indigo-500/50",
-    "GrokRealtime": "bg-rose-500 shadow-rose-500/50",
-    "UltraVoxVoice": "bg-amber-500 shadow-amber-500/50",
-    "TextAgent": "bg-emerald-500 shadow-emerald-500/50",
+const AGENT_HEX: Record<string, string> = {
+    "GeminiVoice": "#E8603C",
+    "GrokRealtime": "#2AA89B",
+    "UltraVoxVoice": "#E9A420",
+    "TextAgent": "#44A870",
 };
 
 export function AgentBreakdown({ data }: AgentBreakdownProps) {
     const breakdown = data.reduce((acc, curr) => {
         const type = curr.agent_type;
         if (!acc[type]) {
-            acc[type] = {
-                type,
-                calls: 0,
-                duration: 0,
-                credits: 0,
-            };
+            acc[type] = { type, calls: 0, duration: 0, credits: 0 };
         }
         acc[type].calls += curr.total_calls;
         acc[type].duration += curr.total_duration;
@@ -46,61 +34,63 @@ export function AgentBreakdown({ data }: AgentBreakdownProps) {
     }, {} as Record<string, { type: AgentType; calls: number; duration: number; credits: number }>);
 
     const sortedBreakdown = Object.values(breakdown).sort((a, b) => b.credits - a.credits);
+    const totalCredits = sortedBreakdown.reduce((a, b) => a + b.credits, 0);
 
     return (
-        <Card className="!bg-card/30 backdrop-blur-xl border-white/10 shadow-lg p-6">
-            {/* Tailwind 4 Safelist */}
-            <div className="hidden">
-                <div className="bg-indigo-500 bg-rose-500 bg-amber-500 bg-emerald-500" />
-                <div className="text-indigo-500 text-rose-500 text-amber-500 text-emerald-500" />
-            </div>
-
+        <Card className="p-6">
             <div className="mb-6">
-                <h3 className="text-lg font-bold text-foreground">Agent Type Breakdown</h3>
-                <p className="text-xs font-medium text-muted-foreground/60">
+                <h3 className="text-[17px] font-bold text-foreground tracking-tight">Agent Type Breakdown</h3>
+                <p className="text-[12px] font-medium text-muted-foreground mt-1">
                     Performance and usage metrics per model engine
                 </p>
             </div>
 
-            <Table>
-                <TableHead>
-                    <TableRow className="border-b border-white/5">
-                        <TableHeaderCell className="text-sm font-semibold text-muted-foreground/80">Agent Engine</TableHeaderCell>
-                        <TableHeaderCell className="text-sm font-semibold text-muted-foreground/80 text-right">Calls</TableHeaderCell>
-                        <TableHeaderCell className="text-sm font-semibold text-muted-foreground/80 text-right">Duration (min)</TableHeaderCell>
-                        <TableHeaderCell className="text-sm font-semibold text-muted-foreground/80 text-right">Credits</TableHeaderCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {sortedBreakdown.map((item) => (
-                        <TableRow key={item.type} className="hover:bg-white/5 transition-colors">
-                            <TableCell>
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)] ${DOT_COLORS[item.type]}`} />
-                                    <span className="font-semibold text-sm text-foreground">
-                                        {AGENT_LABELS[item.type] || item.type}
-                                    </span>
-                                </div>
-                            </TableCell>
-                            <TableCell className="text-right">
-                                <Text className="text-sm font-medium text-foreground">
-                                    {item.calls.toLocaleString()}
-                                </Text>
-                            </TableCell>
-                            <TableCell className="text-right">
-                                <Text className="text-sm font-medium text-foreground">
-                                    {(item.duration / 60).toLocaleString(undefined, { maximumFractionDigits: 1 })}
-                                </Text>
-                            </TableCell>
-                            <TableCell className="text-right">
-                                <Badge color={AGENT_COLORS[item.type] as any} className="font-bold">
-                                    {item.credits.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </Badge>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+            {/* Header */}
+            <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_80px] gap-4 pb-3 mb-1 border-b border-border/60">
+                {["Agent Engine", "Calls", "Duration", "Credits", "Share"].map((label) => (
+                    <span key={label} className={`text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground ${label !== "Agent Engine" ? "text-right" : ""}`}>
+                        {label}
+                    </span>
+                ))}
+            </div>
+
+            {/* Rows */}
+            <div className="divide-y divide-border/30">
+                {sortedBreakdown.map((item) => {
+                    const hex = AGENT_HEX[item.type] || "#94a3b8";
+                    const pct = totalCredits > 0 ? (item.credits / totalCredits) * 100 : 0;
+                    return (
+                        <div
+                            key={item.type}
+                            className="grid grid-cols-[1.5fr_1fr_1fr_1fr_80px] gap-4 py-4 items-center group hover:bg-secondary/30 -mx-3 px-3 rounded-xl transition-colors duration-200"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: hex, boxShadow: `0 0 10px ${hex}40` }} />
+                                <span className="text-[13px] font-semibold text-foreground">
+                                    {AGENT_LABELS[item.type] || item.type}
+                                </span>
+                            </div>
+                            <span className="text-[13px] font-medium text-foreground text-right tabular-nums">
+                                {item.calls.toLocaleString()}
+                            </span>
+                            <span className="text-[13px] font-medium text-muted-foreground text-right tabular-nums">
+                                {(item.duration / 60).toLocaleString(undefined, { maximumFractionDigits: 1 })}m
+                            </span>
+                            <span className="text-[13px] font-bold text-foreground text-right tabular-nums">
+                                {item.credits.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                            <div className="flex items-center justify-end">
+                                <span
+                                    className="text-[11px] font-bold px-2.5 py-1 rounded-lg tabular-nums"
+                                    style={{ backgroundColor: `${hex}15`, color: hex }}
+                                >
+                                    {pct.toFixed(1)}%
+                                </span>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
         </Card>
     );
 }
