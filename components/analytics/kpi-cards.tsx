@@ -1,4 +1,4 @@
-import { Card, Text, Metric, Grid, Icon } from "@tremor/react";
+import { Card, Text, Metric, Icon } from "@tremor/react";
 import { DailyAnalytics, WeeklyAnalytics, MonthlyAnalytics } from "@/types/analytics";
 import { Activity, Clock, Zap, CreditCard } from "lucide-react";
 
@@ -50,7 +50,7 @@ export function KpiCards({ data, metric }: KpiCardsProps) {
     ];
 
     return (
-        <Grid numItemsSm={2} numItemsLg={4} className="gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
             {stats.map((item) => (
                 <Card
                     key={item.title}
@@ -71,6 +71,6 @@ export function KpiCards({ data, metric }: KpiCardsProps) {
                     </div>
                 </Card>
             ))}
-        </Grid>
+        </div>
     );
 }

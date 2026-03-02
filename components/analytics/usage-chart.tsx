@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Title, AreaChart, Text } from "@tremor/react";
+import { Card, Title, AreaChart, Text, Legend } from "@tremor/react";
 import { DailyAnalytics, AgentType } from "@/types/analytics";
 
 interface UsageChartProps {
@@ -12,6 +12,14 @@ const AGENT_COLORS: Record<string, string> = {
     "GeminiVoice": "blue",
     "GrokRealtime": "violet",
     "UltraVoxVoice": "orange",
+    "TextAgent": "emerald",
+};
+
+const AGENT_LABELS: Record<string, string> = {
+    "GeminiVoice": "Gemini",
+    "GrokRealtime": "Grok",
+    "UltraVoxVoice": "UltraVox",
+    "TextAgent": "Text Agent",
 };
 
 export function UsageChart({ data, metric }: UsageChartProps) {
@@ -48,19 +56,26 @@ export function UsageChart({ data, metric }: UsageChartProps) {
         return fullPoint;
     });
 
-    // Ensure colors match the categories
+    // Ensure colors and labels match the categories
     const colors = categories.map(agent => AGENT_COLORS[agent] || "slate");
 
     return (
-        <Card className="h-full">
-            <div className="flex items-center justify-between">
+        <Card className="h-full !bg-card/40 backdrop-blur-sm border-white/5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <Title>Usage Trends</Title>
-                    <Text className="text-xs">Visualizing {labelDescription} by Agent Model</Text>
+                    <h3 className="text-xl font-bold tracking-tight">Usage Trends</h3>
+                    <p className="text-xs font-medium text-muted-foreground/60 uppercase tracking-widest mt-1">
+                        {labelDescription} OVER TIME
+                    </p>
                 </div>
+                <Legend
+                    categories={categories}
+                    colors={colors}
+                    className="max-w-xs"
+                />
             </div>
             <AreaChart
-                className="mt-8 h-80"
+                className="mt-10 h-80"
                 data={chartData}
                 index="label"
                 categories={categories}
@@ -71,6 +86,9 @@ export function UsageChart({ data, metric }: UsageChartProps) {
                 showAnimation={true}
                 curveType="monotone"
                 stack={true}
+                showGridLines={false}
+                showYAxis={true}
+                startEndOnly={false}
             />
         </Card>
     );

@@ -24,6 +24,7 @@ export function AgencyTable({ data }: AgencyTableProps) {
             case "GeminiVoice": return "blue";
             case "GrokRealtime": return "violet";
             case "UltraVoxVoice": return "orange";
+            case "TextAgent": return "emerald";
             default: return "slate";
         }
     };
@@ -62,7 +63,7 @@ export function AgencyTable({ data }: AgencyTableProps) {
                                         color={getBadgeColor(item.agent_type) as any}
                                         className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider"
                                     >
-                                        {item.agent_type}
+                                        {item.agent_type.replace("Voice", "").replace("Realtime", "").replace("Agent", "")}
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right font-bold text-sm">

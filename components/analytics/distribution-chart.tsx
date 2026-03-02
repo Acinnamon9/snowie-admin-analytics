@@ -12,6 +12,7 @@ const AGENT_COLORS: Record<string, string> = {
     "GeminiVoice": "blue",
     "GrokRealtime": "violet",
     "UltraVoxVoice": "orange",
+    "TextAgent": "emerald",
 };
 
 export function DistributionChart({ data, metric }: DistributionChartProps) {

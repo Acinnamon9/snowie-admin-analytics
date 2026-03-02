@@ -1,4 +1,4 @@
-export type AgentType = "UltraVoxVoice" | "GrokRealtime" | "GeminiVoice";
+export type AgentType = "UltraVoxVoice" | "GrokRealtime" | "GeminiVoice" | "TextAgent";
 
 export interface DailyAnalytics {
     date: string;
