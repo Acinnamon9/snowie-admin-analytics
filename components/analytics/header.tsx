@@ -34,10 +34,10 @@ export function AnalyticsHeader({
     const activeAgentIndex = activeAgent === "all" ? 0 : agents.indexOf(activeAgent);
 
     return (
-        <header className="flex flex-col lg:flex-row lg:items-center gap-8 glass-card p-8 rounded-3xl border-white/20 shadow-2xl relative overflow-hidden group">
+        <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 glass-card p-8 rounded-3xl border-white/20 shadow-2xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
 
-            <div className="relative z-10 flex flex-wrap items-center gap-6">
+            <div className="relative z-10 flex flex-wrap items-center gap-8">
                 <div className="space-y-2">
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/80 px-1 flex items-center gap-2 group/label">
                         <div className="w-1 h-1 rounded-full bg-primary/40 group-hover/label:bg-primary transition-colors" />
@@ -89,11 +89,11 @@ export function AnalyticsHeader({
                         </TabList>
                     </TabGroup>
                 </div>
+            </div>
 
-                <div className="lg:ml-auto flex items-center justify-end">
-                    <div className="p-1 glass-card rounded-xl !bg-muted/30 border-none group/toggle">
-                        <ThemeToggle />
-                    </div>
+            <div className="relative z-10 flex items-center justify-end">
+                <div className="p-1 glass-card rounded-xl !bg-muted/30 border-none group/toggle">
+                    <ThemeToggle />
                 </div>
             </div>
         </header>

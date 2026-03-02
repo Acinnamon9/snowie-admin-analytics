@@ -22,6 +22,8 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 1rem;
+    --mesh-opacity-primary: 0.12;
+    --mesh-opacity-secondary: 0.08;
   }
 
   .dark {
@@ -44,6 +46,8 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
+    --mesh-opacity-primary: 0.15;
+    --mesh-opacity-secondary: 0.1;
   }
 }
 
@@ -84,22 +88,16 @@
 }
 
 @utility mesh-gradient {
-  background-color: hsla(222, 84%, 4.9%, 1);
+  background-color: hsl(var(--background));
   background-image:
-    radial-gradient(at 0% 0%, hsla(221, 83%, 53%, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(263, 70%, 50%, 0.1) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(221, 83%, 53%, 0.1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(263, 70%, 50%, 0.05) 0px, transparent 50%);
-}
-
-@utility mesh-gradient-dark {
-  background-image:
-    radial-gradient(at 0% 0%, hsla(221, 83%, 53%, 0.1) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(263, 70%, 50%, 0.08) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, hsla(221, 83%, 53%, var(--mesh-opacity-primary)) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(263, 70%, 50%, var(--mesh-opacity-secondary)) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(221, 83%, 53%, var(--mesh-opacity-secondary)) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(263, 70%, 50%, var(--mesh-opacity-primary)) 0px, transparent 50%);
 }
 
 @utility glass-card {
-  @apply bg-card/60 backdrop-blur-md border border-white/10 shadow-xl transition-all duration-300;
+  @apply bg-card/70 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl transition-all duration-300;
 }
 
 @utility premium-shadow {
@@ -132,9 +130,11 @@
 }
 
 .tremor-Tab-root[data-state="active"] {
-  @apply !bg-white !shadow-sm !rounded-lg !text-primary;
+  @apply !bg-white !rounded-lg !text-primary border-b-2 border-primary scale-[1.03] transition-all duration-300;
+  box-shadow: 0 10px 30px -5px rgba(59, 130, 246, 0.2) !important;
 }
 
 .dark .tremor-Tab-root[data-state="active"] {
-  @apply !bg-muted !text-white;
+  @apply !bg-primary !text-primary-foreground !rounded-lg scale-[1.02] border-none;
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.4) !important;
 }
