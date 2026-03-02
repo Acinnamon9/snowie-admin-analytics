@@ -8,10 +8,10 @@ interface DistributionChartProps {
     metric: "credits" | "calls";
 }
 
-const AGENT_COLORS: Record<AgentType, string> = {
-    GeminiVoice: "indigo",
-    GrokRealtime: "amber",
-    UltraVoxVoice: "emerald",
+const AGENT_COLORS: Record<string, string> = {
+    "GeminiVoice": "blue",
+    "GrokRealtime": "violet",
+    "UltraVoxVoice": "orange",
 };
 
 export function DistributionChart({ data, metric }: DistributionChartProps) {
@@ -21,15 +21,20 @@ export function DistributionChart({ data, metric }: DistributionChartProps) {
         return acc;
     }, {} as Record<string, number>);
 
-    const chartData = Object.entries(totals).map(([name, value]) => ({
+    const categories = Object.keys(totals);
+    const chartData = categories.map((name) => ({
         name,
-        value: Number(value.toFixed(2)),
+        value: Number(totals[name].toFixed(2)),
     }));
+
+    const colors = categories.map(name => AGENT_COLORS[name] || "slate");
 
     return (
         <Card className="h-full">
-            <Title>Agent Distribution</Title>
-            <Text className="text-xs">Market share by {metric}</Text>
+            <div>
+                <Title className="text-xl font-bold tracking-tight">Agent Distribution</Title>
+                <Text className="text-xs font-medium text-muted-foreground/60 uppercase tracking-widest mt-1">Market share by {metric}</Text>
+            </div>
             <DonutChart
                 className="mt-8 h-56"
                 data={chartData}
@@ -38,16 +43,17 @@ export function DistributionChart({ data, metric }: DistributionChartProps) {
                 valueFormatter={(number: number) =>
                     Intl.NumberFormat("us").format(number).toString()
                 }
-                colors={["indigo", "amber", "emerald"]}
+                colors={colors}
+                showAnimation={true}
             />
-            <div className="mt-6 space-y-2">
+            <div className="mt-8 space-y-3">
                 {chartData.map((item) => (
-                    <Flex key={item.name} className="space-x-2">
-                        <div className="flex items-center space-x-2">
-                            <span className={`h-2 w-2 rounded-full bg-${AGENT_COLORS[item.name as AgentType]}-500`} />
-                            <Text className="text-xs truncate">{item.name}</Text>
+                    <Flex key={item.name} className="group transition-opacity duration-300">
+                        <div className="flex items-center space-x-3">
+                            <span className={`h-2 w-2 rounded-full bg-${AGENT_COLORS[item.name] || 'slate'}-500 shadow-[0_0_8px_rgba(0,0,0,0.2)]`} />
+                            <Text className="text-sm font-semibold text-muted-foreground group-hover:text-foreground transition-colors duration-200">{item.name}</Text>
                         </div>
-                        <Badge size="xs" color={AGENT_COLORS[item.name as AgentType] as any}>
+                        <Badge size="xs" color={(AGENT_COLORS[item.name] || 'slate') as any} className="font-mono font-bold">
                             {item.value.toLocaleString()}
                         </Badge>
                     </Flex>
