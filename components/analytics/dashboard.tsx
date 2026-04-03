@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useDeferredValue } from "react";
 import { Card } from "@tremor/react";
 import { AnalyticsTimeframe, AgentType, DailyAnalytics, BaseAnalytics } from "@/types/analytics";
 import { useAnalytics } from "@/hooks/use-analytics";
@@ -31,9 +31,6 @@ export function AnalyticsDashboard() {
 
     // Agency exclusion filter
     const [excludedAgencies, setExcludedAgencies] = useState<Set<number>>(new Set());
-
-    // Concurrent UI transition for background data processing
-    const [, startTransition] = useTransition();
 
 
     const { data: rawData, isLoading: isDataLoading, isError, error } = useAnalytics(timeframe);
@@ -71,21 +68,16 @@ export function AnalyticsDashboard() {
     };
 
     const handleToggleExclude = (id: number) => {
-        // Mark as transition to prevent blocking the UI (Optimistic UI in Table handles immediate response)
-        startTransition(() => {
-            setExcludedAgencies(prev => {
-                const next = new Set(prev);
-                if (next.has(id)) next.delete(id);
-                else next.add(id);
-                return next;
-            });
+        setExcludedAgencies(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
         });
     };
 
     const handleClearExclusions = () => {
-        startTransition(() => {
-            setExcludedAgencies(new Set());
-        });
+        setExcludedAgencies(new Set());
     };
 
     // 1. Enrich data with agency names (only re-runs when raw data or names change)
@@ -151,6 +143,11 @@ export function AnalyticsDashboard() {
         return { baseData: baseFilteredData, data: final };
     }, [baseFilteredData, excludedAgencies]);
 
+    // DEFERRED ANALYTICS: This allows charts to render in the background while 
+    // lightweight components like KPIs and Tables update the moment an agency is hidden.
+    const deferredAnalyticsData = useDeferredValue(analytics?.data || []);
+
+
     return (
         <div className="flex flex-col gap-8 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 animate-in">
             <AnalyticsHeader
@@ -194,25 +191,32 @@ export function AnalyticsDashboard() {
 
             {analytics && (
                 <main className="grid grid-cols-1 gap-8 animate-in-delayed">
+                    {/* High Priority (Instant Updates) */}
                     <KpiCards data={analytics.data} />
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2 group">
-                            <UsageChart data={analytics.data} metric={metric} />
+                            {/* Low Priority (Background Processing) */}
+                            <UsageChart data={deferredAnalyticsData} metric={metric} />
                         </div>
                         <div className="lg:col-span-1">
-                            <DistributionChart data={analytics.data} metric={metric} />
+                            {/* Low Priority (Background Processing) */}
+                            <DistributionChart data={deferredAnalyticsData} metric={metric} />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 gap-8">
+                        {/* High Priority (Instant Updates) */}
                         <AgentBreakdown data={analytics.data} />
+                        
                         <AgencyTable 
                             data={analytics.baseData} 
                             excludedAgencies={excludedAgencies}
                             onToggleExclude={handleToggleExclude}
                         />
-                        <Insights data={analytics.data} />
+
+                        {/* Low Priority (Background Processing) */}
+                        <Insights data={deferredAnalyticsData || []} />
                     </div>
                 </main>
             )}
