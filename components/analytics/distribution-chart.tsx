@@ -1,5 +1,4 @@
-"use client";
-
+import { memo } from "react";
 import { Card, DonutChart } from "@tremor/react";
 import { DailyAnalytics, WeeklyAnalytics, MonthlyAnalytics } from "@/types/analytics";
 
@@ -22,7 +21,7 @@ const AGENT_HEX_COLORS: Record<string, string> = {
     "Text Agent": "#44A870",
 };
 
-export function DistributionChart({ data, metric }: DistributionChartProps) {
+export const DistributionChart = memo(function DistributionChart({ data, metric }: DistributionChartProps) {
     const getAgentLabel = (name: string) => {
         if (name === "GeminiVoice") return "Gemini";
         if (name === "GrokRealtime") return "Grok";
@@ -99,7 +98,7 @@ export function DistributionChart({ data, metric }: DistributionChartProps) {
                                     : "0%"}
                             </span>
                             <span
-                                className="text-[11px] font-bold px-2.5 py-1 rounded-lg tabular-nums"
+                                className="text-[12px] font-bold px-2.5 py-1 rounded-lg tabular-nums"
                                 style={{
                                     backgroundColor: `${AGENT_HEX_COLORS[item.name]}15`,
                                     color: AGENT_HEX_COLORS[item.name],
@@ -113,4 +112,4 @@ export function DistributionChart({ data, metric }: DistributionChartProps) {
             </div>
         </Card>
     );
-}
+});

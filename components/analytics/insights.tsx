@@ -1,5 +1,4 @@
-"use client";
-
+import { memo } from "react";
 import { Card, Text, Flex, BadgeDelta } from "@tremor/react";
 import { DailyAnalytics, WeeklyAnalytics, MonthlyAnalytics } from "@/types/analytics";
 import { Info, TrendingUp, Minus, Zap } from "lucide-react";
@@ -8,7 +7,7 @@ interface InsightsProps {
     data: DailyAnalytics[] | WeeklyAnalytics[] | MonthlyAnalytics[];
 }
 
-export function Insights({ data }: InsightsProps) {
+export const Insights = memo(function Insights({ data }: InsightsProps) {
     const totalCredits = data.reduce((acc, curr) => acc + curr.total_credits, 0);
     const totalCalls = data.reduce((acc, curr) => acc + curr.total_calls, 0);
     const avgCost = totalCalls > 0 ? totalCredits / totalCalls : 0;
@@ -53,7 +52,7 @@ export function Insights({ data }: InsightsProps) {
                     >
                         <div className="flex items-center justify-between">
                             <span
-                                className="text-[11px] font-bold px-2.5 py-1 rounded-lg"
+                                className="text-[12px] font-bold px-2.5 py-1 rounded-lg"
                                 style={{ backgroundColor: `${insight.hex}15`, color: insight.hex }}
                             >
                                 {insight.title}
@@ -74,4 +73,4 @@ export function Insights({ data }: InsightsProps) {
             </div>
         </Card>
     );
-}
+});

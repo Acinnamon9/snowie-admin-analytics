@@ -44,7 +44,7 @@ export function SegmentedControl({ options, value, onChange, className, size = "
                     onClick={() => onChange(index)}
                     className={cn(
                         "relative z-10 flex-1 whitespace-nowrap transition-all duration-300 font-semibold rounded-[9px]",
-                        size === "sm" ? "px-3 py-[5px] text-[11px]" : "px-4 py-[7px] text-[13px]",
+                        size === "sm" ? "px-3 py-[5px] text-[12px]" : "px-4 py-[7px] text-[13px]",
                         value === index
                             ? "text-white"
                             : "text-muted-foreground hover:text-foreground"

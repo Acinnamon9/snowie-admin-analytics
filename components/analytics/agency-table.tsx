@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect, memo } from "react";
 import {
     Card,
     Table,
@@ -9,10 +9,12 @@ import {
     TableCell,
 } from "@tremor/react";
 import { DailyAnalytics, WeeklyAnalytics, MonthlyAnalytics, BaseAnalytics } from "@/types/analytics";
-import { ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Search, Eye, EyeOff, ArrowDown } from "lucide-react";
 
 interface AgencyTableProps {
     data: DailyAnalytics[] | WeeklyAnalytics[] | MonthlyAnalytics[];
+    excludedAgencies: Set<number>;
+    onToggleExclude: (id: number) => void;
 }
 
 type SortColumn = "agency_id" | "company" | "agent_type" | "total_calls" | "total_duration" | "total_credits";
@@ -26,14 +28,14 @@ const BADGE_HEX: Record<string, string> = {
     "TextAgent": "#44A870",
 };
 
-const SortIcon = ({ 
-    column, 
-    sortColumn, 
-    sortDirection 
-}: { 
-    column: SortColumn, 
-    sortColumn: SortColumn, 
-    sortDirection: SortDirection 
+const SortIcon = ({
+    column,
+    sortColumn,
+    sortDirection
+}: {
+    column: SortColumn,
+    sortColumn: SortColumn,
+    sortDirection: SortDirection
 }) => {
     if (sortColumn !== column) return <ChevronsUpDown className="ml-1.5 h-3 w-3 opacity-25" />;
     return sortDirection === "asc" ?
@@ -41,10 +43,46 @@ const SortIcon = ({
         <ChevronDown className="ml-1.5 h-3 w-3 text-[hsl(var(--coral))]" />;
 };
 
-export function AgencyTable({ data }: AgencyTableProps) {
+export const AgencyTable = memo(function AgencyTable({
+    data,
+    excludedAgencies,
+    onToggleExclude
+}: AgencyTableProps) {
     const [sortColumn, setSortColumn] = useState<SortColumn>("total_credits");
     const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
     const [searchQuery, setSearchQuery] = useState("");
+
+    const tableContainerRef = useRef<HTMLDivElement>(null);
+
+    const scrollToBottom = () => {
+        if (tableContainerRef.current) {
+            tableContainerRef.current.scrollTo({
+                top: tableContainerRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+
+    const [optimisticExclusions, setOptimisticExclusions] = useState(excludedAgencies);
+
+    // Sync optimistic state when parent state changes (e.g. from "Clear All")
+    useEffect(() => {
+        setOptimisticExclusions(excludedAgencies);
+    }, [excludedAgencies]);
+
+    const handleOptimisticToggle = (id: number) => {
+        // 1. Instant local update for 0ms perceived latency
+        setOptimisticExclusions(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+
+        // 2. Heavy parent update
+        onToggleExclude(id);
+    };
 
     const handleSort = (column: SortColumn) => {
         if (sortColumn === column) {
@@ -59,7 +97,7 @@ export function AgencyTable({ data }: AgencyTableProps) {
         }
     };
 
-    const filteredAndSortedData = useMemo(() => {
+    const filteredAndRawSortedData = useMemo(() => {
         let result = [...data];
 
         if (searchQuery.trim()) {
@@ -93,9 +131,28 @@ export function AgencyTable({ data }: AgencyTableProps) {
         });
     }, [data, sortColumn, sortDirection, searchQuery]);
 
+    const finalDisplayData = useMemo(() => {
+        const included: typeof filteredAndRawSortedData = [];
+        const excluded: typeof filteredAndRawSortedData = [];
+
+        for (const item of filteredAndRawSortedData) {
+            if (optimisticExclusions.has(item.agency_id)) {
+                excluded.push(item);
+            } else {
+                included.push(item);
+            }
+        }
+
+        // Pushes all excluded items to the bottom while maintaining sort order
+        return [...included, ...excluded];
+    }, [filteredAndRawSortedData, optimisticExclusions]);
 
 
-    const headerCellClass = "cursor-pointer hover:bg-secondary/50 transition-colors text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground py-3.5";
+
+
+
+
+    const headerCellClass = " sticky top-0 z-10 cursor-pointer hover:bg-secondary/50 transition-colors text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground py-3.5 bg-background ";
 
     return (
         <Card className="overflow-hidden">
@@ -105,19 +162,30 @@ export function AgencyTable({ data }: AgencyTableProps) {
                     <p className="text-[12px] font-medium text-muted-foreground mt-1">Performance metrics per agency partner</p>
                 </div>
                 {/* Search */}
-                <div className="relative">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search agencies..."
-                        className="pl-9 pr-4 py-2.5 rounded-[12px] bg-secondary/60 border border-border/50 text-[13px] font-medium text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--coral)/0.2)] focus:border-[hsl(var(--coral)/0.3)] transition-all w-full sm:w-60"
-                    />
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={scrollToBottom}
+                        className="flex items-center gap-2 px-3 py-2.5 rounded-[12px] bg-secondary/60 border border-border/50 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-all"
+                        title="Scroll to bottom"
+                    >
+                        <ArrowDown size={14} />
+                        <span className="hidden sm:inline">Bottom</span>
+                    </button>
+
+                    <div className="relative">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search agencies..."
+                            className="pl-9 pr-4 py-2.5 rounded-[12px] bg-secondary/60 border border-border/50 text-[13px] font-medium text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--coral)/0.2)] focus:border-[hsl(var(--coral)/0.3)] transition-all w-full sm:w-60"
+                        />
+                    </div>
                 </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div ref={tableContainerRef} className="overflow-x-auto overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-secondary scrollbar-track-secondary/20">
                 <Table>
                     <TableHead>
                         <TableRow className="border-b border-border/60">
@@ -139,13 +207,21 @@ export function AgencyTable({ data }: AgencyTableProps) {
                             <TableHeaderCell onClick={() => handleSort("total_credits")} className={`${headerCellClass} text-right`}>
                                 <div className="flex items-center justify-end">Credits <SortIcon column="total_credits" sortColumn={sortColumn} sortDirection={sortDirection} /></div>
                             </TableHeaderCell>
+                            <TableHeaderCell className={`${headerCellClass} text-center`}>
+                                Actions
+                            </TableHeaderCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredAndSortedData.map((item, idx) => {
+                        {finalDisplayData.map((item, idx) => {
                             const hex = BADGE_HEX[item.agent_type] || "#94a3b8";
+                            const isExcluded = optimisticExclusions.has(item.agency_id);
+
                             return (
-                                <TableRow key={`${item.agency_id}-${item.agent_type}-${idx}`} className="hover:bg-secondary/30 transition-colors duration-200 border-b border-border/20">
+                                <TableRow
+                                    key={`${item.agency_id}-${item.agent_type}-${idx}`}
+                                    className={`hover:bg-secondary/30 transition-colors duration-200 border-b border-border/20 ${isExcluded ? 'opacity-40 grayscale-[0.5]' : ''}`}
+                                >
                                     <TableCell className="font-mono text-[12px] text-muted-foreground tracking-wider">
                                         #{item.agency_id.toString().padStart(4, '0')}
                                     </TableCell>
@@ -154,7 +230,7 @@ export function AgencyTable({ data }: AgencyTableProps) {
                                     </TableCell>
                                     <TableCell>
                                         <span
-                                            className="text-[11px] font-bold px-2.5 py-1 rounded-lg inline-block"
+                                            className="text-[12px] font-bold px-2.5 py-1 rounded-lg inline-block"
                                             style={{
                                                 backgroundColor: `${hex}12`,
                                                 color: hex,
@@ -174,12 +250,27 @@ export function AgencyTable({ data }: AgencyTableProps) {
                                             {item.total_credits.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </span>
                                     </TableCell>
+                                    <TableCell className="text-center">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleOptimisticToggle(item.agency_id);
+                                            }}
+                                            className={`p-1.5 rounded-lg transition-all ${isExcluded
+                                                ? 'bg-[hsl(var(--coral)/0.1)] text-[hsl(var(--coral))] hover:bg-[hsl(var(--coral)/0.2)]'
+                                                : 'text-muted-foreground hover:bg-secondary/80 hover:text-foreground'
+                                                }`}
+                                            title={isExcluded ? "Include in analysis" : "Exclude COMPANY from analysis"}
+                                        >
+                                            {isExcluded ? <Eye size={15} /> : <EyeOff size={15} />}
+                                        </button>
+                                    </TableCell>
                                 </TableRow>
                             );
                         })}
-                        {filteredAndSortedData.length === 0 && (
+                        {finalDisplayData.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-16">
+                                <TableCell colSpan={7} className="text-center py-16">
                                     <p className="text-muted-foreground/35 text-sm font-medium">No matching results</p>
                                 </TableCell>
                             </TableRow>
@@ -189,4 +280,4 @@ export function AgencyTable({ data }: AgencyTableProps) {
             </div>
         </Card>
     );
-}
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import { Card } from "@tremor/react";
 import { AnalyticsTimeframe, AgentType, DailyAnalytics, BaseAnalytics } from "@/types/analytics";
 import { useAnalytics } from "@/hooks/use-analytics";
@@ -28,6 +28,13 @@ export function AnalyticsDashboard() {
 
     // Duration filter
     const [durationRange, setDurationRange] = useState<DurationRange>("all");
+
+    // Agency exclusion filter
+    const [excludedAgencies, setExcludedAgencies] = useState<Set<number>>(new Set());
+
+    // Concurrent UI transition for background data processing
+    const [, startTransition] = useTransition();
+
 
     const { data: rawData, isLoading: isDataLoading, isError, error } = useAnalytics(timeframe);
     const { data: agencyNames, isLoading: isNamesLoading } = useAgencyNames();
@@ -63,13 +70,31 @@ export function AnalyticsDashboard() {
         setEndDate(end);
     };
 
-    const data = useMemo(() => {
+    const handleToggleExclude = (id: number) => {
+        // Mark as transition to prevent blocking the UI (Optimistic UI in Table handles immediate response)
+        startTransition(() => {
+            setExcludedAgencies(prev => {
+                const next = new Set(prev);
+                if (next.has(id)) next.delete(id);
+                else next.add(id);
+                return next;
+            });
+        });
+    };
+
+    const handleClearExclusions = () => {
+        startTransition(() => {
+            setExcludedAgencies(new Set());
+        });
+    };
+
+    // 1. Enrich data with agency names (only re-runs when raw data or names change)
+    const enrichedData = useMemo(() => {
         if (!rawData) return null;
 
-        // Enrich data with agency names if missing (primarily for daily view)
-        const enriched = rawData.map(item => {
+        return rawData.map(item => {
             if (item.agency__company_name) return item;
-            
+
             const metadata = agencyNames?.get(item.agency_id);
             if (metadata) {
                 return {
@@ -80,8 +105,13 @@ export function AnalyticsDashboard() {
             }
             return item;
         });
+    }, [rawData, agencyNames]);
 
-        let filtered = [...enriched];
+    // 2. Apply global filters (Engine, Date, Duration)
+    const baseFilteredData = useMemo(() => {
+        if (!enrichedData) return null;
+
+        let filtered = [...enrichedData];
 
         // Agent filter
         if (!activeAgents.has("all")) {
@@ -110,7 +140,16 @@ export function AnalyticsDashboard() {
         }
 
         return filtered as BaseAnalytics[];
-    }, [rawData, activeAgents, startDate, endDate, durationRange, agencyNames]);
+    }, [enrichedData, activeAgents, startDate, endDate, durationRange]);
+
+    // 3. Final analytics (handles exclusions and prepares the object for consumers)
+    const analytics = useMemo(() => {
+        if (!baseFilteredData) return null;
+
+        const final = baseFilteredData.filter(item => !excludedAgencies.has(item.agency_id));
+
+        return { baseData: baseFilteredData, data: final };
+    }, [baseFilteredData, excludedAgencies]);
 
     return (
         <div className="flex flex-col gap-8 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 animate-in">
@@ -126,6 +165,8 @@ export function AnalyticsDashboard() {
                 onDateChange={handleDateChange}
                 durationRange={durationRange}
                 onDurationChange={setDurationRange}
+                excludedCount={excludedAgencies.size}
+                onClearExclusions={handleClearExclusions}
             />
 
             {isLoading && (
@@ -151,23 +192,27 @@ export function AnalyticsDashboard() {
                 </Card>
             )}
 
-            {data && (
+            {analytics && (
                 <main className="grid grid-cols-1 gap-8 animate-in-delayed">
-                    <KpiCards data={data} metric={metric} />
+                    <KpiCards data={analytics.data} />
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2 group">
-                            <UsageChart data={data} metric={metric} />
+                            <UsageChart data={analytics.data} metric={metric} />
                         </div>
                         <div className="lg:col-span-1">
-                            <DistributionChart data={data} metric={metric} />
+                            <DistributionChart data={analytics.data} metric={metric} />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 gap-8">
-                        <AgentBreakdown data={data} />
-                        <AgencyTable data={data} />
-                        <Insights data={data} />
+                        <AgentBreakdown data={analytics.data} />
+                        <AgencyTable 
+                            data={analytics.baseData} 
+                            excludedAgencies={excludedAgencies}
+                            onToggleExclude={handleToggleExclude}
+                        />
+                        <Insights data={analytics.data} />
                     </div>
                 </main>
             )}

@@ -20,6 +20,8 @@ interface AnalyticsHeaderProps {
     onDateChange: (start: string | null, end: string | null) => void;
     durationRange: DurationRange;
     onDurationChange: (range: DurationRange) => void;
+    excludedCount?: number;
+    onClearExclusions?: () => void;
 }
 
 export function AnalyticsHeader({
@@ -34,6 +36,8 @@ export function AnalyticsHeader({
     onDateChange,
     durationRange,
     onDurationChange,
+    excludedCount = 0,
+    onClearExclusions,
 }: AnalyticsHeaderProps) {
     const handleTimeframeChange = (index: number) => {
         const timeframes: AnalyticsTimeframe[] = ["daily", "weekly", "monthly"];
@@ -59,6 +63,21 @@ export function AnalyticsHeader({
                         <h1 className="text-[22px] font-extrabold tracking-tight text-foreground flex items-center gap-2">
                             Snowie Analytics
                             <Sparkles size={14} className="text-[hsl(var(--amber))] animate-pulse-glow" />
+                            {excludedCount > 0 && (
+                                <div className="ml-2 flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[hsl(var(--coral)/0.1)] border border-[hsl(var(--coral)/0.2)] animate-in fade-in zoom-in duration-300">
+                                    <span className="text-[10px] font-bold text-[hsl(var(--coral))] uppercase tracking-wider">
+                                        {excludedCount} Excluded
+                                    </span>
+                                    {onClearExclusions && (
+                                        <button 
+                                            onClick={onClearExclusions}
+                                            className="text-[9px] font-black text-[hsl(var(--coral))] hover:underline underline-offset-2 transition-colors ml-1"
+                                        >
+                                            RESET
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </h1>
                         <p className="text-[13px] font-medium text-muted-foreground tracking-wide mt-0.5">
                             Real-time agent performance & usage
@@ -74,7 +93,7 @@ export function AnalyticsHeader({
             {/* ─── Primary Controls ─── */}
             <div className="flex flex-wrap items-end gap-x-6 gap-y-4 px-7 py-5 relative z-50">
                 <div className="flex flex-col gap-2">
-                    <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                    <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
                         Timeframe
                     </span>
                     <SegmentedControl
@@ -86,7 +105,7 @@ export function AnalyticsHeader({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                    <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
                         Metric
                     </span>
                     <SegmentedControl
@@ -98,7 +117,7 @@ export function AnalyticsHeader({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                    <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
                         Date Range
                     </span>
                     <DateRangePicker
@@ -109,7 +128,7 @@ export function AnalyticsHeader({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                    <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
                         Call Duration
                     </span>
                     <DurationFilter
@@ -124,7 +143,7 @@ export function AnalyticsHeader({
 
             {/* ─── Agent Filter ─── */}
             <div className="px-7 py-4 flex items-center gap-5">
-                <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground shrink-0">
+                <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-muted-foreground shrink-0">
                     Agents
                 </span>
                 <AgentFilter

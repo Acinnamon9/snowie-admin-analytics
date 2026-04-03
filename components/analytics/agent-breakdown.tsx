@@ -1,5 +1,4 @@
-"use client";
-
+import { memo } from "react";
 import { Card } from "@tremor/react";
 import { DailyAnalytics, WeeklyAnalytics, MonthlyAnalytics, AgentType } from "@/types/analytics";
 
@@ -23,7 +22,7 @@ const AGENT_HEX: Record<string, string> = {
     "TextAgent": "#44A870",
 };
 
-export function AgentBreakdown({ data }: AgentBreakdownProps) {
+export const AgentBreakdown = memo(function AgentBreakdown({ data }: AgentBreakdownProps) {
     const breakdown = data.reduce((acc, curr) => {
         const type = curr.agent_type;
         if (!acc[type]) {
@@ -83,7 +82,7 @@ export function AgentBreakdown({ data }: AgentBreakdownProps) {
                             </span>
                             <div className="flex items-center justify-end">
                                 <span
-                                    className="text-[11px] font-bold px-2.5 py-1 rounded-lg tabular-nums"
+                                    className="text-[12px] font-bold px-2.5 py-1 rounded-lg tabular-nums"
                                     style={{ backgroundColor: `${hex}15`, color: hex }}
                                 >
                                     {pct.toFixed(1)}%
@@ -95,4 +94,4 @@ export function AgentBreakdown({ data }: AgentBreakdownProps) {
             </div>
         </Card>
     );
-}
+});

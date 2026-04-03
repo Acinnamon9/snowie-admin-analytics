@@ -73,14 +73,14 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                         </div>
                         <div>
                             <h2 className="text-base font-bold text-foreground">Secure Access</h2>
-                            <p className="text-[11px] text-muted-foreground">Protected admin dashboard</p>
+                            <p className="text-[12px] text-muted-foreground">Protected admin dashboard</p>
                         </div>
                     </div>
 
                     <form onSubmit={handleSubmit}>
                         {/* Password Field */}
                         <div className="mb-5">
-                            <label className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground mb-2 block">
+                            <label className="text-[12px] font-bold uppercase tracking-[0.1em] text-muted-foreground mb-2 block">
                                 Password
                             </label>
                             <div className="relative">
@@ -136,7 +136,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 </div>
 
                 {/* Footer */}
-                <p className="text-center text-[11px] text-muted-foreground/50 mt-6">
+                <p className="text-center text-[12px] text-muted-foreground/50 mt-6">
                     Secured access &middot; Snowie AI Platform
                 </p>
             </div>

@@ -1,10 +1,9 @@
-import { Card, Metric, Text } from "@tremor/react";
+import { memo } from "react";
 import { DailyAnalytics, WeeklyAnalytics, MonthlyAnalytics } from "@/types/analytics";
 import { BarChart3, Clock, Database, CreditCard } from "lucide-react";
 
 interface KpiCardsProps {
     data: DailyAnalytics[] | WeeklyAnalytics[] | MonthlyAnalytics[];
-    metric: "credits" | "calls";
 }
 
 const CARD_ACCENTS = [
@@ -14,7 +13,7 @@ const CARD_ACCENTS = [
     { gradient: "gradient-sage", hex: "#44A870", shadow: "rgba(68, 168, 112, 0.2)", borderColor: "rgba(68, 168, 112, 0.15)" },
 ];
 
-export function KpiCards({ data, metric }: KpiCardsProps) {
+export const KpiCards = memo(function KpiCards({ data }: KpiCardsProps) {
     const totalCalls = data.reduce((acc, curr) => acc + curr.total_calls, 0);
     const totalDuration = data.reduce((acc, curr) => acc + curr.total_duration, 0);
     const totalCredits = data.reduce((acc, curr) => acc + curr.total_credits, 0);
@@ -66,7 +65,7 @@ export function KpiCards({ data, metric }: KpiCardsProps) {
 
                         <div className="p-6">
                             <div className="flex items-center justify-between mb-5">
-                                <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                                <span className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground">
                                     {item.title}
                                 </span>
                                 <div
@@ -90,4 +89,4 @@ export function KpiCards({ data, metric }: KpiCardsProps) {
             })}
         </div>
     );
-}
+});
