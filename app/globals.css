@@ -253,7 +253,7 @@ input[type="date"] {
 }
 
 .tremor-TabList-root {
-  @apply !p-1 !rounded-xl;
+  @apply p-1! rounded-xl!;
   background: hsl(var(--muted) / 0.5) !important;
 }
 
@@ -284,16 +284,23 @@ input[type="date"] {
   background: hsl(var(--muted-foreground) / 0.3);
 }
 
-/* ─── Safelist ─── */
-.color-safelist {
-  @apply bg-orange-500 bg-cyan-500 bg-amber-500 bg-emerald-500;
-  @apply text-orange-500 text-cyan-500 text-amber-500 text-emerald-500;
-  @apply fill-orange-500 fill-cyan-500 fill-amber-500 fill-emerald-500;
-  @apply stroke-orange-500 stroke-cyan-500 stroke-amber-500 stroke-emerald-500;
-  @apply bg-orange-50 bg-cyan-50 bg-amber-50 bg-emerald-50;
-  @apply text-orange-600 text-cyan-600 text-amber-600 text-emerald-600;
-  @apply bg-orange-500/10 bg-cyan-500/10 bg-amber-500/10 bg-emerald-500/10;
-  @apply border-orange-500/20 border-cyan-500/20 border-amber-500/20 border-emerald-500/20;
-  @apply text-orange-400 text-cyan-400 text-amber-400 text-emerald-400;
-  @apply shadow-orange-500/50 shadow-cyan-500/50 shadow-amber-500/50 shadow-emerald-500/50;
-}
+/* ─── Safelist - split to avoid property conflicts ─── */
+.safelist-bg-orange { @apply bg-orange-500; }
+.safelist-bg-cyan { @apply bg-cyan-500; }
+.safelist-bg-amber { @apply bg-amber-500; }
+.safelist-bg-emerald { @apply bg-emerald-500; }
+
+.safelist-text-orange { @apply text-orange-500; }
+.safelist-text-cyan { @apply text-cyan-500; }
+.safelist-text-amber { @apply text-amber-500; }
+.safelist-text-emerald { @apply text-emerald-500; }
+
+.safelist-fill-orange { @apply fill-orange-500; }
+.safelist-fill-cyan { @apply fill-cyan-500; }
+.safelist-fill-amber { @apply fill-amber-500; }
+.safelist-fill-emerald { @apply fill-emerald-500; }
+
+.safelist-stroke-orange { @apply stroke-orange-500; }
+.safelist-stroke-cyan { @apply stroke-cyan-500; }
+.safelist-stroke-amber { @apply stroke-amber-500; }
+.safelist-stroke-emerald { @apply stroke-emerald-500; }

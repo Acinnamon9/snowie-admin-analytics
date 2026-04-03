@@ -20,6 +20,7 @@ const AGENTS: { key: AgentType | "all"; label: string; hex: string }[] = [
     { key: "GeminiVoice", label: "Gemini", hex: "#E8603C" },
     { key: "GrokRealtime", label: "Grok", hex: "#2AA89B" },
     { key: "UltraVoxVoice", label: "UltraVox", hex: "#E9A420" },
+    { key: "AvatarAgent", label: "Avatar", hex: "#6366f1" },
     { key: "TextAgent", label: "Text", hex: "#44A870" },
 ];
 
@@ -54,7 +55,7 @@ export function AgentFilter({ activeAgents, onToggle, className }: AgentFilterPr
                         {isActive && key === "all" && (
                             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-0.5"
                                 style={{ backgroundColor: "#E8603C15", color: "#E8603C" }}>
-                                4
+                                5
                             </span>
                         )}
                     </button>

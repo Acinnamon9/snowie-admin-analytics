@@ -1,10 +1,10 @@
 "use client";
 
 import { Card, AreaChart, Legend } from "@tremor/react";
-import { DailyAnalytics } from "@/types/analytics";
+import { AnalyticsResponse, DailyAnalytics } from "@/types/analytics";
 
 interface UsageChartProps {
-    data: any[];
+    data: AnalyticsResponse;
     metric: "credits" | "calls";
 }
 
@@ -26,12 +26,12 @@ export function UsageChart({ data, metric }: UsageChartProps) {
         return name;
     };
 
-    const groupMap = new Map<string, Record<string, any>>();
+    const groupMap = new Map<string, Record<string, number | string>>();
     const agents = new Set<string>();
 
     data.forEach(item => {
         const dateLabel = (item as DailyAnalytics).date
-            ? new Date((item as DailyAnalytics).date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            ? new Date((item as DailyAnalytics).date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
             : `Agency ${item.agency_id.toString().slice(-4)}`;
 
         if (!groupMap.has(dateLabel)) {
@@ -42,7 +42,7 @@ export function UsageChart({ data, metric }: UsageChartProps) {
         const agentDisplayName = getAgentLabel(item.agent_type);
         const val = metric === "credits" ? Number(item.total_credits.toFixed(2)) : item.total_calls;
 
-        entry[agentDisplayName] = (entry[agentDisplayName] || 0) + val;
+        entry[agentDisplayName] = (Number(entry[agentDisplayName]) || 0) + val;
         agents.add(agentDisplayName);
     });
 
@@ -67,12 +67,12 @@ export function UsageChart({ data, metric }: UsageChartProps) {
 
     return (
         <Card className="h-full p-6">
-            {/* Safelist */}
-            <div className="hidden">
-                <div className="bg-orange-500 bg-cyan-500 bg-amber-500 bg-emerald-500" />
-                <div className="text-orange-500 text-cyan-500 text-amber-500 text-emerald-500" />
-                <div className="fill-orange-500 fill-cyan-500 fill-amber-500 fill-emerald-500" />
-                <div className="stroke-orange-500 stroke-cyan-500 stroke-amber-500 stroke-emerald-500" />
+            {/* Safelist - split into separate elements to avoid property overlap warnings */}
+            <div className="hidden" aria-hidden="true">
+                <div className="bg-orange-500" /><div className="bg-cyan-500" /><div className="bg-amber-500" /><div className="bg-emerald-500" />
+                <div className="text-orange-500" /><div className="text-cyan-500" /><div className="text-amber-500" /><div className="text-emerald-500" />
+                <div className="fill-orange-500" /><div className="fill-cyan-500" /><div className="fill-amber-500" /><div className="fill-emerald-500" />
+                <div className="stroke-orange-500" /><div className="stroke-cyan-500" /><div className="stroke-amber-500" /><div className="stroke-emerald-500" />
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -85,12 +85,12 @@ export function UsageChart({ data, metric }: UsageChartProps) {
                 <Legend
                     categories={categories}
                     colors={colors}
-                    className="!text-[11px] font-semibold"
+                    className="text-[12px]! font-semibold"
                 />
             </div>
 
             <AreaChart
-                className="h-80 -ml-4"
+                className="h-80"
                 data={chartData}
                 index="label"
                 categories={categories}

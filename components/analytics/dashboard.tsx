@@ -2,8 +2,9 @@
 
 import { useState, useMemo } from "react";
 import { Card } from "@tremor/react";
-import { AnalyticsTimeframe, AgentType, DailyAnalytics } from "@/types/analytics";
+import { AnalyticsTimeframe, AgentType, DailyAnalytics, BaseAnalytics } from "@/types/analytics";
 import { useAnalytics } from "@/hooks/use-analytics";
+import { useAgencyNames } from "@/hooks/use-agency-names";
 import { KpiCards } from "./kpi-cards";
 import { UsageChart } from "./usage-chart";
 import { AgencyTable } from "./agency-table";
@@ -28,7 +29,10 @@ export function AnalyticsDashboard() {
     // Duration filter
     const [durationRange, setDurationRange] = useState<DurationRange>("all");
 
-    const { data: rawData, isLoading, isError, error } = useAnalytics(timeframe);
+    const { data: rawData, isLoading: isDataLoading, isError, error } = useAnalytics(timeframe);
+    const { data: agencyNames, isLoading: isNamesLoading } = useAgencyNames();
+
+    const isLoading = isDataLoading || (isNamesLoading && timeframe === "daily");
 
     const handleAgentToggle = (agent: AgentType | "all") => {
         setActiveAgents(prev => {
@@ -47,8 +51,8 @@ export function AnalyticsDashboard() {
                 if (next.size === 0) return new Set(["all"]);
             } else {
                 next.add(agent);
-                // If all 4 are selected, switch to "all"
-                if (next.size === 4) return new Set(["all"]);
+                // If all are selected, switch to "all" (Gemini, Grok, UltraVox, Avatar, Text)
+                if (next.size === 5) return new Set(["all"]);
             }
             return next;
         });
@@ -62,7 +66,22 @@ export function AnalyticsDashboard() {
     const data = useMemo(() => {
         if (!rawData) return null;
 
-        let filtered = [...rawData];
+        // Enrich data with agency names if missing (primarily for daily view)
+        const enriched = rawData.map(item => {
+            if (item.agency__company_name) return item;
+            
+            const metadata = agencyNames?.get(item.agency_id);
+            if (metadata) {
+                return {
+                    ...item,
+                    agency__company_name: metadata.name,
+                    agency__schema_name: metadata.uuid,
+                };
+            }
+            return item;
+        });
+
+        let filtered = [...enriched];
 
         // Agent filter
         if (!activeAgents.has("all")) {
@@ -90,8 +109,8 @@ export function AnalyticsDashboard() {
             );
         }
 
-        return filtered as any;
-    }, [rawData, activeAgents, startDate, endDate, durationRange]);
+        return filtered as BaseAnalytics[];
+    }, [rawData, activeAgents, startDate, endDate, durationRange, agencyNames]);
 
     return (
         <div className="flex flex-col gap-8 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 animate-in">

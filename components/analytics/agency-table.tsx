@@ -8,7 +8,7 @@ import {
     TableBody,
     TableCell,
 } from "@tremor/react";
-import { DailyAnalytics, WeeklyAnalytics, MonthlyAnalytics, AgentType } from "@/types/analytics";
+import { DailyAnalytics, WeeklyAnalytics, MonthlyAnalytics, BaseAnalytics } from "@/types/analytics";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
 
 interface AgencyTableProps {
@@ -22,7 +22,23 @@ const BADGE_HEX: Record<string, string> = {
     "GeminiVoice": "#E8603C",
     "GrokRealtime": "#2AA89B",
     "UltraVoxVoice": "#E9A420",
+    "AvatarAgent": "#6366f1",
     "TextAgent": "#44A870",
+};
+
+const SortIcon = ({ 
+    column, 
+    sortColumn, 
+    sortDirection 
+}: { 
+    column: SortColumn, 
+    sortColumn: SortColumn, 
+    sortDirection: SortDirection 
+}) => {
+    if (sortColumn !== column) return <ChevronsUpDown className="ml-1.5 h-3 w-3 opacity-25" />;
+    return sortDirection === "asc" ?
+        <ChevronUp className="ml-1.5 h-3 w-3 text-[hsl(var(--coral))]" /> :
+        <ChevronDown className="ml-1.5 h-3 w-3 text-[hsl(var(--coral))]" />;
 };
 
 export function AgencyTable({ data }: AgencyTableProps) {
@@ -49,7 +65,8 @@ export function AgencyTable({ data }: AgencyTableProps) {
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
             result = result.filter(item => {
-                const company = ((item as WeeklyAnalytics).agency__company_name || (item as WeeklyAnalytics).agency__schema_name || "").toLowerCase();
+                const companyName = item.agency__company_name || item.agency__schema_name || "";
+                const company = companyName.toLowerCase();
                 const id = item.agency_id.toString();
                 const agent = item.agent_type.toLowerCase();
                 return company.includes(q) || id.includes(q) || agent.includes(q);
@@ -59,15 +76,15 @@ export function AgencyTable({ data }: AgencyTableProps) {
         if (!sortColumn || !sortDirection) return result;
 
         return result.sort((a, b) => {
-            let aVal: any;
-            let bVal: any;
+            let aVal: string | number;
+            let bVal: string | number;
 
             if (sortColumn === "company") {
-                aVal = (a as WeeklyAnalytics).agency__company_name || (a as WeeklyAnalytics).agency__schema_name || "";
-                bVal = (b as WeeklyAnalytics).agency__company_name || (b as WeeklyAnalytics).agency__schema_name || "";
+                aVal = (a as BaseAnalytics).agency__company_name || (a as BaseAnalytics).agency__schema_name || "";
+                bVal = (b as BaseAnalytics).agency__company_name || (b as BaseAnalytics).agency__schema_name || "";
             } else {
-                aVal = a[sortColumn as keyof typeof a];
-                bVal = b[sortColumn as keyof typeof b];
+                aVal = a[sortColumn as keyof typeof a] as string | number;
+                bVal = b[sortColumn as keyof typeof b] as string | number;
             }
 
             if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
@@ -76,12 +93,7 @@ export function AgencyTable({ data }: AgencyTableProps) {
         });
     }, [data, sortColumn, sortDirection, searchQuery]);
 
-    const SortIcon = ({ column }: { column: SortColumn }) => {
-        if (sortColumn !== column) return <ChevronsUpDown className="ml-1.5 h-3 w-3 opacity-25" />;
-        return sortDirection === "asc" ?
-            <ChevronUp className="ml-1.5 h-3 w-3 text-[hsl(var(--coral))]" /> :
-            <ChevronDown className="ml-1.5 h-3 w-3 text-[hsl(var(--coral))]" />;
-    };
+
 
     const headerCellClass = "cursor-pointer hover:bg-secondary/50 transition-colors text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground py-3.5";
 
@@ -110,22 +122,22 @@ export function AgencyTable({ data }: AgencyTableProps) {
                     <TableHead>
                         <TableRow className="border-b border-border/60">
                             <TableHeaderCell onClick={() => handleSort("agency_id")} className={headerCellClass}>
-                                <div className="flex items-center">Agency ID <SortIcon column="agency_id" /></div>
+                                <div className="flex items-center">Agency ID <SortIcon column="agency_id" sortColumn={sortColumn} sortDirection={sortDirection} /></div>
                             </TableHeaderCell>
                             <TableHeaderCell onClick={() => handleSort("company")} className={headerCellClass}>
-                                <div className="flex items-center">Company <SortIcon column="company" /></div>
+                                <div className="flex items-center">Company <SortIcon column="company" sortColumn={sortColumn} sortDirection={sortDirection} /></div>
                             </TableHeaderCell>
                             <TableHeaderCell onClick={() => handleSort("agent_type")} className={headerCellClass}>
-                                <div className="flex items-center">Engine <SortIcon column="agent_type" /></div>
+                                <div className="flex items-center">Engine <SortIcon column="agent_type" sortColumn={sortColumn} sortDirection={sortDirection} /></div>
                             </TableHeaderCell>
                             <TableHeaderCell onClick={() => handleSort("total_calls")} className={`${headerCellClass} text-right`}>
-                                <div className="flex items-center justify-end">Calls <SortIcon column="total_calls" /></div>
+                                <div className="flex items-center justify-end">Calls <SortIcon column="total_calls" sortColumn={sortColumn} sortDirection={sortDirection} /></div>
                             </TableHeaderCell>
                             <TableHeaderCell onClick={() => handleSort("total_duration")} className={`${headerCellClass} text-right`}>
-                                <div className="flex items-center justify-end">Duration <SortIcon column="total_duration" /></div>
+                                <div className="flex items-center justify-end">Duration <SortIcon column="total_duration" sortColumn={sortColumn} sortDirection={sortDirection} /></div>
                             </TableHeaderCell>
                             <TableHeaderCell onClick={() => handleSort("total_credits")} className={`${headerCellClass} text-right`}>
-                                <div className="flex items-center justify-end">Credits <SortIcon column="total_credits" /></div>
+                                <div className="flex items-center justify-end">Credits <SortIcon column="total_credits" sortColumn={sortColumn} sortDirection={sortDirection} /></div>
                             </TableHeaderCell>
                         </TableRow>
                     </TableHead>
@@ -138,7 +150,7 @@ export function AgencyTable({ data }: AgencyTableProps) {
                                         #{item.agency_id.toString().padStart(4, '0')}
                                     </TableCell>
                                     <TableCell className="font-semibold text-[13px] text-foreground">
-                                        {(item as WeeklyAnalytics).agency__company_name || (item as WeeklyAnalytics).agency__schema_name || "Partner"}
+                                        {(item as BaseAnalytics).agency__company_name || (item as BaseAnalytics).agency__schema_name || `Partner #${item.agency_id}`}
                                     </TableCell>
                                     <TableCell>
                                         <span

@@ -11,6 +11,7 @@ const AGENT_LABELS: Record<string, string> = {
     "GeminiVoice": "Gemini",
     "GrokRealtime": "Grok",
     "UltraVoxVoice": "UltraVox",
+    "AvatarAgent": "Avatar",
     "TextAgent": "Text Agent",
 };
 
@@ -18,6 +19,7 @@ const AGENT_HEX: Record<string, string> = {
     "GeminiVoice": "#E8603C",
     "GrokRealtime": "#2AA89B",
     "UltraVoxVoice": "#E9A420",
+    "AvatarAgent": "#6366f1",
     "TextAgent": "#44A870",
 };
 

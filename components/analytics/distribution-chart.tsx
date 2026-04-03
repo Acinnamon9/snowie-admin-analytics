@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, DonutChart, Text, Flex, Badge } from "@tremor/react";
+import { Card, DonutChart } from "@tremor/react";
 import { DailyAnalytics, WeeklyAnalytics, MonthlyAnalytics } from "@/types/analytics";
 
 interface DistributionChartProps {
@@ -51,12 +51,12 @@ export function DistributionChart({ data, metric }: DistributionChartProps) {
 
     return (
         <Card className="h-full p-6">
-            {/* Safelist */}
-            <div className="hidden">
-                <div className="bg-orange-500 bg-cyan-500 bg-amber-500 bg-emerald-500" />
-                <div className="text-orange-500 text-cyan-500 text-amber-500 text-emerald-500" />
-                <div className="fill-orange-500 fill-cyan-500 fill-amber-500 fill-emerald-500" />
-                <div className="stroke-orange-500 stroke-cyan-500 stroke-amber-500 stroke-emerald-500" />
+            {/* Safelist - split into separate elements to avoid property overlap warnings */}
+            <div className="hidden" aria-hidden="true">
+                <div className="bg-orange-500" /><div className="bg-cyan-500" /><div className="bg-amber-500" /><div className="bg-emerald-500" />
+                <div className="text-orange-500" /><div className="text-cyan-500" /><div className="text-amber-500" /><div className="text-emerald-500" />
+                <div className="fill-orange-500" /><div className="fill-cyan-500" /><div className="fill-amber-500" /><div className="fill-emerald-500" />
+                <div className="stroke-orange-500" /><div className="stroke-cyan-500" /><div className="stroke-amber-500" /><div className="stroke-emerald-500" />
             </div>
 
             <div>
